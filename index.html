@@ -122,7 +122,7 @@
 <nav>
   <div class="nav-logo" onclick="goHome()">
     <div class="nav-logo-icon">N</div>
-    <span class="nav-logo-text">Nex<em>Core</em> Labs</span>
+    <span class="nav-logo-text" id="nav-team-name">NexCore Labs</span>
   </div>
   <div class="nav-right">
     <button class="back-btn" id="backBtn" onclick="goHome()">← <span id="backLabel">返回</span></button>
@@ -134,7 +134,7 @@
   <div class="home-inner">
     <div class="team-hero">
       <div class="team-badge"><span class="dot"></span> <span id="badge-text">活跃中</span></div>
-      <h1 id="team-title">Nex<em>Core</em> Labs</h1>
+      <h1 id="team-title">NexCore Labs</h1>
       <p id="team-desc"></p>
       <div class="team-stats">
         <div class="stat"><div class="stat-num" id="stat-proj">5+</div><div class="stat-label" id="stat-proj-label">项目经验</div></div>
@@ -185,6 +185,8 @@ function render() {
 
   // team hero
   document.getElementById('badge-text').textContent = d.members.length + ' ' + (lang==='zh' ? '名成员 · ' : 'members · ') + t.active;
+  document.getElementById('team-title').textContent = d.team.name;
+  document.getElementById('nav-team-name').textContent = d.team.name;
   document.getElementById('team-desc').textContent = lang==='zh' ? d.team.desc_zh : d.team.desc_en;
   document.getElementById('stat-mem').textContent = d.members.length;
   document.getElementById('stat-proj-label').textContent = t.proj;
