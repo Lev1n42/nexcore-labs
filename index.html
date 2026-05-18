@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NexCore Labs</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --bg: #0d1117; --bg2: #161b22; --bg3: #21262d;
+      --accent: #58a6ff; --accent2: #3fb950;
+      --text: #e6edf3; --muted: #8b949e; --border: #30363d;
+    }
+    html, body { height: 100%; overflow: hidden; }
+    body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); }
+
+    /* NAV */
+    nav {
+      position: fixed; top: 0; width: 100%; z-index: 200;
+      background: rgba(13,17,23,.92); backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 2rem; height: 56px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .nav-logo { display: flex; align-items: center; gap: .6rem; cursor: pointer; }
+    .nav-logo-icon { width: 30px; height: 30px; border-radius: 8px; background: linear-gradient(135deg, var(--accent), #d2a8ff); display: flex; align-items: center; justify-content: center; font-size: .85rem; font-weight: 800; color: #fff; }
+    .nav-logo-text { font-size: 1rem; font-weight: 700; }
+    .nav-logo-text em { font-style: normal; color: var(--accent); }
+    .nav-right { display: flex; align-items: center; gap: .8rem; }
+    .back-btn { display: none; align-items: center; gap: .4rem; background: var(--bg3); border: 1px solid var(--border); border-radius: 8px; padding: .3rem .9rem; cursor: pointer; font-size: .82rem; color: var(--muted); transition: all .2s; }
+    .back-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .back-btn.visible { display: flex; }
+    .lang-btn { background: var(--bg3); border: 1px solid var(--border); border-radius: 20px; padding: .28rem .75rem; cursor: pointer; font-size: .78rem; color: var(--muted); transition: all .2s; }
+    .lang-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* VIEWS */
+    .view { position: fixed; inset: 56px 0 0 0; overflow-y: auto; transition: transform .38s cubic-bezier(.4,0,.2,1), opacity .35s; }
+    #home-view { transform: translateX(0); opacity: 1; }
+    #home-view.slide-out { transform: translateX(-60px); opacity: 0; pointer-events: none; }
+    .member-view { transform: translateX(100%); opacity: 0; pointer-events: none; }
+    .member-view.slide-in { transform: translateX(0); opacity: 1; pointer-events: auto; }
+
+    /* HOME */
+    .home-inner { max-width: 900px; margin: 0 auto; padding: 3rem 2rem 5rem; }
+    .team-hero { text-align: center; margin-bottom: 3.5rem; }
+    .team-badge { display: inline-flex; align-items: center; gap: .5rem; background: rgba(88,166,255,.08); border: 1px solid rgba(88,166,255,.2); border-radius: 20px; padding: .3rem 1rem; font-size: .78rem; color: var(--accent); margin-bottom: 1.2rem; }
+    .team-badge span.dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent2); animation: pulse 2s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1}50%{opacity:.4} }
+    .team-hero h1 { font-size: clamp(2rem, 5vw, 3rem); font-weight: 800; margin-bottom: .5rem; }
+    .team-hero h1 em { font-style: normal; color: var(--accent); }
+    .team-hero p { color: var(--muted); font-size: .95rem; max-width: 480px; margin: 0 auto 2rem; line-height: 1.7; }
+    .team-stats { display: flex; gap: 2rem; justify-content: center; flex-wrap: wrap; }
+    .stat { text-align: center; }
+    .stat-num { font-size: 1.5rem; font-weight: 800; color: var(--accent); }
+    .stat-label { font-size: .72rem; color: var(--muted); margin-top: .1rem; }
+    .divider { height: 1px; background: var(--border); margin: 2.5rem 0; }
+    .members-label { font-size: .75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 1rem; }
+    .members-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; }
+
+    /* MEMBER CARDS */
+    .member-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 16px; padding: 1.8rem 1.5rem 1.4rem; cursor: pointer; transition: border-color .22s, transform .22s, box-shadow .22s; position: relative; overflow: hidden; }
+    .member-card::before { content: ''; position: absolute; inset: 0; background: var(--card-glow); opacity: 0; transition: opacity .3s; }
+    .member-card:hover { transform: translateY(-4px); box-shadow: 0 12px 30px rgba(0,0,0,.35); border-color: var(--card-color); }
+    .member-card:hover::before { opacity: 1; }
+    .card-blue  { --card-color:#58a6ff; --card-glow:radial-gradient(ellipse at top left,rgba(88,166,255,.07),transparent 65%); }
+    .card-green { --card-color:#3fb950; --card-glow:radial-gradient(ellipse at top left,rgba(63,185,80,.07),transparent 65%); }
+    .member-avatar { width: 64px; height: 64px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: 700; color: #fff; margin-bottom: 1rem; }
+    .avatar-blue  { background: linear-gradient(135deg,#58a6ff,#1f6feb); box-shadow: 0 0 20px rgba(88,166,255,.25); }
+    .avatar-green { background: linear-gradient(135deg,#3fb950,#238636); box-shadow: 0 0 20px rgba(63,185,80,.25); }
+    .member-name { font-size: 1.1rem; font-weight: 700; margin-bottom: .15rem; }
+    .member-name-en { font-size: .8rem; color: var(--muted); margin-bottom: .6rem; }
+    .member-role { display: inline-block; font-size: .72rem; font-weight: 600; padding: .2rem .65rem; border-radius: 6px; margin-bottom: .9rem; }
+    .role-blue  { background:rgba(88,166,255,.1); color:#58a6ff; border:1px solid rgba(88,166,255,.25); }
+    .role-green { background:rgba(63,185,80,.1);  color:#3fb950; border:1px solid rgba(63,185,80,.25); }
+    .member-tags { display: flex; flex-wrap: wrap; gap: .35rem; margin-bottom: 1rem; }
+    .mtag { padding: .16rem .5rem; border-radius: 4px; background: var(--bg3); font-size: .72rem; color: var(--muted); border: 1px solid var(--border); }
+    .member-school { font-size: .75rem; color: var(--muted); }
+    .card-arrow { position: absolute; right: 1.2rem; bottom: 1.3rem; color: var(--muted); font-size: 1rem; transition: transform .2s, color .2s; }
+    .member-card:hover .card-arrow { transform: translateX(3px); color: var(--card-color); }
+
+    /* PROFILE PAGE */
+    .profile-inner { max-width: 860px; margin: 0 auto; padding: 2rem 2rem 5rem; }
+    .profile-header { display: flex; gap: 1.5rem; align-items: flex-start; background: var(--bg2); border: 1px solid var(--border); border-radius: 16px; padding: 1.8rem; margin-bottom: 1.5rem; }
+    .profile-avatar { width: 80px; height: 80px; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; font-weight: 700; color: #fff; }
+    .profile-name { font-size: 1.4rem; font-weight: 800; margin-bottom: .2rem; }
+    .profile-name-en { font-size: .85rem; color: var(--muted); margin-bottom: .5rem; }
+    .profile-role-badge { display: inline-block; font-size: .75rem; font-weight: 600; padding: .22rem .75rem; border-radius: 8px; margin-bottom: .8rem; }
+    .profile-meta { display: flex; flex-wrap: wrap; gap: 1rem; }
+    .pmeta { font-size: .78rem; color: var(--muted); }
+    .sub-nav { display: flex; gap: .4rem; margin-bottom: 1.5rem; background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: .3rem; }
+    .sub-nav-btn { flex: 1; padding: .5rem; border-radius: 7px; border: none; background: transparent; color: var(--muted); font-size: .85rem; cursor: pointer; transition: all .18s; font-weight: 500; }
+    .sub-nav-btn.active { background: var(--bg3); color: var(--text); }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+    .about-grid { display: grid; grid-template-columns: 1fr 1fr; gap: .8rem; }
+    .info-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: .85rem 1rem; display: flex; align-items: center; gap: .7rem; }
+    .info-icon { font-size: 1rem; width: 28px; text-align: center; }
+    .info-label { font-size: .7rem; color: var(--muted); }
+    .info-value { font-size: .88rem; font-weight: 500; }
+    .skills-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(185px,1fr)); gap: .8rem; }
+    .skill-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 1rem; }
+    .skill-card h4 { font-size: .75rem; text-transform: uppercase; letter-spacing: .5px; margin-bottom: .55rem; }
+    .skill-tags { display: flex; flex-wrap: wrap; gap: .3rem; }
+    .skill-tag { padding: .16rem .5rem; border-radius: 4px; background: var(--bg3); font-size: .73rem; color: var(--muted); border: 1px solid var(--border); }
+    .project-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 1.2rem; margin-bottom: .8rem; }
+    .project-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: .55rem; gap: 1rem; }
+    .project-name { font-size: .95rem; font-weight: 700; }
+    .project-course { font-size: .7rem; color: var(--muted); padding: .16rem .5rem; border: 1px solid var(--border); border-radius: 4px; white-space: nowrap; }
+    .project-stack { display: flex; flex-wrap: wrap; gap: .3rem; margin-bottom: .55rem; }
+    .stack-tag { padding: .16rem .5rem; border-radius: 4px; font-size: .7rem; }
+    .project-desc { font-size: .83rem; color: var(--muted); }
+    .project-desc ul { padding-left: 1rem; }
+    .project-desc li { margin-bottom: .28rem; }
+    .loading { text-align: center; padding: 4rem; color: var(--muted); }
+    .lf { transition: opacity .18s; }
+    .lf.sw { opacity: 0; }
+    @media (max-width: 600px) { .members-grid { grid-template-columns: 1fr; } .about-grid { grid-template-columns: 1fr; } .profile-header { flex-direction: column; } }
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo" onclick="goHome()">
+    <div class="nav-logo-icon">N</div>
+    <span class="nav-logo-text">Nex<em>Core</em> Labs</span>
+  </div>
+  <div class="nav-right">
+    <button class="back-btn" id="backBtn" onclick="goHome()">← <span id="backLabel">返回</span></button>
+    <button class="lang-btn" id="langBtn" onclick="toggleLang()">EN</button>
+  </div>
+</nav>
+
+<div class="view" id="home-view">
+  <div class="home-inner">
+    <div class="team-hero">
+      <div class="team-badge"><span class="dot"></span> <span id="badge-text">活跃中</span></div>
+      <h1 id="team-title">Nex<em>Core</em> Labs</h1>
+      <p id="team-desc"></p>
+      <div class="team-stats">
+        <div class="stat"><div class="stat-num" id="stat-proj">5+</div><div class="stat-label" id="stat-proj-label">项目经验</div></div>
+        <div class="stat"><div class="stat-num" id="stat-mem">2</div><div class="stat-label" id="stat-mem-label">核心成员</div></div>
+        <div class="stat"><div class="stat-num">6+</div><div class="stat-label" id="stat-lang-label">编程语言</div></div>
+      </div>
+    </div>
+    <div class="divider"></div>
+    <div class="members-label" id="members-label">团队成员</div>
+    <div class="members-grid" id="members-grid">
+      <div class="loading">加载中...</div>
+    </div>
+  </div>
+</div>
+
+<div class="view member-view" id="member-view">
+  <div class="profile-inner" id="member-content"></div>
+</div>
+
+<script>
+let DATA = null;
+let lang = 'zh';
+let currentMember = null;
+
+const L = {
+  zh: { back:'返回', active:'活跃中', members:'团队成员', proj:'项目经验', mem:'核心成员', langs:'编程语言', about:'关于', skills:'技术栈', projects:'项目', school:'就读院校', major:'专业/年级', location:'所在地', dob:'出生年月', language:'语言能力', interest:'兴趣方向' },
+  en: { back:'Back', active:'Active', members:'Team Members', proj:'Projects', mem:'Members', langs:'Languages', about:'About', skills:'Skills', projects:'Projects', school:'University', major:'Major/Year', location:'Location', dob:'Date of Birth', language:'Languages', interest:'Interests' }
+};
+
+const colorMap = {
+  blue:  { card:'card-blue',  avatar:'avatar-blue',  role:'role-blue',  stackBg:'rgba(88,166,255,.1)',  stackColor:'#58a6ff', stackBorder:'rgba(88,166,255,.2)', skillColor:'#58a6ff',  profileBg:'linear-gradient(135deg,#58a6ff,#1f6feb)', profileGlow:'rgba(88,166,255,.3)', roleBg:'rgba(88,166,255,.12)', roleColor:'#58a6ff', roleBorder:'rgba(88,166,255,.25)' },
+  green: { card:'card-green', avatar:'avatar-green', role:'role-green', stackBg:'rgba(63,185,80,.1)',   stackColor:'#3fb950', stackBorder:'rgba(63,185,80,.2)',  skillColor:'#3fb950',  profileBg:'linear-gradient(135deg,#3fb950,#238636)', profileGlow:'rgba(63,185,80,.3)',  roleBg:'rgba(63,185,80,.12)',  roleColor:'#3fb950', roleBorder:'rgba(63,185,80,.25)' },
+};
+
+async function loadData() {
+  try {
+    const res = await fetch('/content.json?t=' + Date.now());
+    DATA = await res.json();
+    render();
+  } catch {
+    document.getElementById('members-grid').innerHTML = '<div class="loading">内容加载失败，请刷新重试</div>';
+  }
+}
+
+function render() {
+  const t = L[lang];
+  const d = DATA;
+
+  // team hero
+  document.getElementById('badge-text').textContent = d.members.length + ' ' + (lang==='zh' ? '名成员 · ' : 'members · ') + t.active;
+  document.getElementById('team-desc').textContent = lang==='zh' ? d.team.desc_zh : d.team.desc_en;
+  document.getElementById('stat-mem').textContent = d.members.length;
+  document.getElementById('stat-proj-label').textContent = t.proj;
+  document.getElementById('stat-mem-label').textContent = t.mem;
+  document.getElementById('stat-lang-label').textContent = t.langs;
+  document.getElementById('members-label').textContent = t.members;
+  document.getElementById('backLabel').textContent = t.back;
+
+  // member cards
+  const grid = document.getElementById('members-grid');
+  grid.innerHTML = d.members.map(m => {
+    const c = colorMap[m.color] || colorMap.blue;
+    const topTags = [...(m.skills.languages||[]).slice(0,2), ...(m.skills.tools||[]).slice(0,2)];
+    return `
+      <div class="member-card ${c.card}" onclick="openMember('${m.id}')">
+        <div class="member-avatar ${c.avatar}">${m.avatar}</div>
+        <div class="member-name">${lang==='zh'?m.name_zh:m.name_en}</div>
+        <div class="member-name-en">${m.name_en}</div>
+        <div class="member-role ${c.role}">${lang==='zh'?m.role_zh:m.role_en}</div>
+        <div class="member-tags">${topTags.map(t=>`<span class="mtag">${t}</span>`).join('')}</div>
+        <div class="member-school">🎓 ${lang==='zh'?m.school_zh:m.school_en}</div>
+        <span class="card-arrow">›</span>
+      </div>`;
+  }).join('');
+
+  // re-render open profile if needed
+  if (currentMember) renderProfile(DATA.members.find(m=>m.id===currentMember));
+}
+
+function openMember(id) {
+  currentMember = id;
+  const m = DATA.members.find(m => m.id === id);
+  renderProfile(m);
+  document.getElementById('home-view').classList.add('slide-out');
+  document.getElementById('member-view').classList.add('slide-in');
+  document.getElementById('backBtn').classList.add('visible');
+  document.getElementById('member-view').scrollTop = 0;
+}
+
+function renderProfile(m) {
+  const t = L[lang];
+  const c = colorMap[m.color] || colorMap.blue;
+  const skills = m.skills;
+
+  document.getElementById('member-content').innerHTML = `
+    <div class="profile-header">
+      <div class="profile-avatar" style="background:${c.profileBg};box-shadow:0 0 24px ${c.profileGlow}">${m.avatar}</div>
+      <div>
+        <div class="profile-name">${lang==='zh'?m.name_zh:m.name_en}</div>
+        <div class="profile-name-en">${m.name_en} · ${m.dob}</div>
+        <div class="profile-role-badge" style="background:${c.roleBg};color:${c.roleColor};border:1px solid ${c.roleBorder}">${lang==='zh'?m.role_zh:m.role_en}</div>
+        <div class="profile-meta">
+          <span class="pmeta">🏫 ${lang==='zh'?m.school_zh:m.school_en}</span>
+          <span class="pmeta">📍 ${lang==='zh'?m.location_zh:m.location_en}</span>
+          <span class="pmeta">📧 ${m.email}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="sub-nav">
+      <button class="sub-nav-btn active" onclick="switchTab('about',this)">${t.about}</button>
+      <button class="sub-nav-btn" onclick="switchTab('skills',this)">${t.skills}</button>
+      <button class="sub-nav-btn" onclick="switchTab('projects',this)">${t.projects}</button>
+    </div>
+
+    <div class="tab-content active" id="profile-about">
+      <div class="about-grid">
+        <div class="info-card"><div class="info-icon">🎓</div><div><div class="info-label">${t.school}</div><div class="info-value">${lang==='zh'?m.school_zh:m.school_en}</div></div></div>
+        <div class="info-card"><div class="info-icon">📚</div><div><div class="info-label">${t.major}</div><div class="info-value">${lang==='zh'?m.major_zh:m.major_en}</div></div></div>
+        <div class="info-card"><div class="info-icon">🌐</div><div><div class="info-label">${t.language}</div><div class="info-value">${lang==='zh'?m.lang_zh:m.lang_en}</div></div></div>
+        <div class="info-card"><div class="info-icon">💡</div><div><div class="info-label">${t.interest}</div><div class="info-value">${lang==='zh'?m.interest_zh:m.interest_en}</div></div></div>
+        <div class="info-card"><div class="info-icon">📍</div><div><div class="info-label">${t.location}</div><div class="info-value">${lang==='zh'?m.location_zh:m.location_en}</div></div></div>
+        <div class="info-card"><div class="info-icon">🎂</div><div><div class="info-label">${t.dob}</div><div class="info-value">${m.dob}</div></div></div>
+      </div>
+    </div>
+
+    <div class="tab-content" id="profile-skills">
+      <div class="skills-grid">
+        <div class="skill-card"><h4 style="color:${c.skillColor}">${lang==='zh'?'编程语言':'Languages'}</h4><div class="skill-tags">${(skills.languages||[]).map(s=>`<span class="skill-tag">${s}</span>`).join('')}</div></div>
+        <div class="skill-card"><h4 style="color:${c.skillColor}">${lang==='zh'?'开发工具':'Dev Tools'}</h4><div class="skill-tags">${(skills.tools||[]).map(s=>`<span class="skill-tag">${s}</span>`).join('')}</div></div>
+        <div class="skill-card"><h4 style="color:${c.skillColor}">${lang==='zh'?'算法 & DS':'Algorithms & DS'}</h4><div class="skill-tags">${(lang==='zh'?skills.algo_zh:skills.algo_en||[]).map(s=>`<span class="skill-tag">${s}</span>`).join('')}</div></div>
+        <div class="skill-card"><h4 style="color:${c.skillColor}">${lang==='zh'?'软件工程':'Software Eng.'}</h4><div class="skill-tags">${(lang==='zh'?skills.se_zh:skills.se_en||[]).map(s=>`<span class="skill-tag">${s}</span>`).join('')}</div></div>
+      </div>
+    </div>
+
+    <div class="tab-content" id="profile-projects">
+      ${(m.projects||[]).map(p=>`
+        <div class="project-card">
+          <div class="project-header">
+            <div class="project-name">${lang==='zh'?p.name_zh:p.name_en}</div>
+            <span class="project-course">${p.course}</span>
+          </div>
+          <div class="project-stack">${(p.stack||[]).map(s=>`<span class="stack-tag" style="background:${c.stackBg};color:${c.stackColor};border:1px solid ${c.stackBorder}">${s}</span>`).join('')}</div>
+          <div class="project-desc"><ul>${(lang==='zh'?p.desc_zh:p.desc_en||[]).map(d=>`<li>${d}</li>`).join('')}</ul></div>
+        </div>`).join('')}
+    </div>
+  `;
+}
+
+function switchTab(id, btn) {
+  document.querySelectorAll('#member-content .tab-content').forEach(el=>el.classList.remove('active'));
+  document.querySelectorAll('#member-content .sub-nav-btn').forEach(el=>el.classList.remove('active'));
+  document.getElementById('profile-'+id).classList.add('active');
+  btn.classList.add('active');
+}
+
+function goHome() {
+  document.getElementById('member-view').classList.remove('slide-in');
+  document.getElementById('home-view').classList.remove('slide-out');
+  document.getElementById('backBtn').classList.remove('visible');
+  currentMember = null;
+}
+
+function toggleLang() {
+  lang = lang==='zh'?'en':'zh';
+  document.getElementById('langBtn').textContent = lang==='zh'?'EN':'中文';
+  render();
+}
+
+loadData();
+</script>
+</body>
+</html>

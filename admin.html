@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NexCore Labs — 管理后台</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --bg: #0d1117; --bg2: #161b22; --bg3: #21262d;
+      --accent: #58a6ff; --accent2: #3fb950; --danger: #f85149;
+      --text: #e6edf3; --muted: #8b949e; --border: #30363d;
+    }
+    body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+    /* LOGIN */
+    .login-screen {
+      min-height: 100vh; display: flex; align-items: center; justify-content: center;
+    }
+    .login-box {
+      background: var(--bg2); border: 1px solid var(--border); border-radius: 16px;
+      padding: 2.5rem; width: 100%; max-width: 380px; text-align: center;
+    }
+    .login-icon { font-size: 2.5rem; margin-bottom: 1rem; }
+    .login-box h2 { font-size: 1.3rem; margin-bottom: .3rem; }
+    .login-box p { color: var(--muted); font-size: .85rem; margin-bottom: 1.8rem; }
+    .login-box input {
+      width: 100%; padding: .75rem 1rem; border-radius: 8px;
+      border: 1px solid var(--border); background: var(--bg3);
+      color: var(--text); font-size: .95rem; margin-bottom: .8rem;
+      outline: none; transition: border-color .2s;
+    }
+    .login-box input:focus { border-color: var(--accent); }
+    .login-box input::placeholder { color: var(--muted); }
+    .login-error { color: var(--danger); font-size: .82rem; margin-bottom: .8rem; display: none; }
+
+    /* SETUP SCREEN */
+    .setup-screen { display: none; min-height: 100vh; padding: 2rem; }
+    .setup-inner { max-width: 560px; margin: 3rem auto; }
+    .setup-inner h2 { font-size: 1.3rem; margin-bottom: .5rem; }
+    .setup-inner p { color: var(--muted); font-size: .88rem; margin-bottom: 1.5rem; line-height: 1.7; }
+    .setup-steps { counter-reset: step; margin-bottom: 1.8rem; }
+    .setup-step {
+      background: var(--bg2); border: 1px solid var(--border); border-radius: 10px;
+      padding: 1rem 1.2rem; margin-bottom: .8rem;
+      display: flex; gap: 1rem; align-items: flex-start;
+    }
+    .step-num {
+      width: 26px; height: 26px; border-radius: 50%; background: var(--accent);
+      color: #0d1117; font-size: .78rem; font-weight: 700;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .step-body h4 { font-size: .9rem; margin-bottom: .25rem; }
+    .step-body p { color: var(--muted); font-size: .8rem; }
+    .step-body a { color: var(--accent); }
+    .step-body code { background: var(--bg3); padding: .1rem .4rem; border-radius: 4px; font-size: .78rem; border: 1px solid var(--border); }
+
+    /* ADMIN MAIN */
+    .admin-screen { display: none; }
+    .admin-nav {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(13,17,23,.92); backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 2rem; height: 56px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .admin-logo { font-size: .95rem; font-weight: 700; color: var(--accent); }
+    .admin-logo span { color: var(--muted); font-weight: 400; font-size: .8rem; margin-left: .5rem; }
+    .nav-actions { display: flex; gap: .6rem; align-items: center; }
+    .publish-btn {
+      background: var(--accent2); color: #0d1117;
+      border: none; border-radius: 8px; padding: .45rem 1.2rem;
+      font-size: .85rem; font-weight: 700; cursor: pointer;
+      display: flex; align-items: center; gap: .4rem;
+      transition: opacity .2s;
+    }
+    .publish-btn:disabled { opacity: .5; cursor: not-allowed; }
+    .logout-btn {
+      background: transparent; border: 1px solid var(--border); color: var(--muted);
+      border-radius: 8px; padding: .4rem .9rem; font-size: .82rem; cursor: pointer;
+      transition: all .2s;
+    }
+    .logout-btn:hover { border-color: var(--danger); color: var(--danger); }
+
+    /* TABS */
+    .admin-body { max-width: 860px; margin: 0 auto; padding: 2rem; }
+    .section-tabs { display: flex; gap: .4rem; margin-bottom: 1.5rem; background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: .3rem; }
+    .tab-btn { flex: 1; padding: .55rem; border-radius: 7px; border: none; background: transparent; color: var(--muted); font-size: .88rem; cursor: pointer; transition: all .18s; font-weight: 500; }
+    .tab-btn.active { background: var(--bg3); color: var(--text); }
+    .tab-pane { display: none; }
+    .tab-pane.active { display: block; }
+
+    /* FORM */
+    .form-section { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 1.4rem; margin-bottom: 1rem; }
+    .form-section-title { font-size: .8rem; text-transform: uppercase; letter-spacing: .8px; color: var(--accent); margin-bottom: 1rem; font-weight: 700; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: .8rem; margin-bottom: .8rem; }
+    .form-row.full { grid-template-columns: 1fr; }
+    .form-group { display: flex; flex-direction: column; gap: .35rem; }
+    .form-group label { font-size: .75rem; color: var(--muted); }
+    .form-group input, .form-group textarea {
+      padding: .6rem .85rem; border-radius: 8px;
+      border: 1px solid var(--border); background: var(--bg3);
+      color: var(--text); font-size: .88rem; outline: none;
+      transition: border-color .2s; font-family: inherit;
+    }
+    .form-group input:focus, .form-group textarea:focus { border-color: var(--accent); }
+    .form-group textarea { resize: vertical; min-height: 70px; }
+
+    /* Project cards */
+    .project-editor { background: var(--bg3); border: 1px solid var(--border); border-radius: 10px; padding: 1.1rem; margin-bottom: .8rem; }
+    .project-editor-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: .8rem; }
+    .project-editor-title { font-size: .88rem; font-weight: 600; }
+    .del-btn { background: transparent; border: 1px solid var(--border); color: var(--muted); border-radius: 6px; padding: .2rem .6rem; font-size: .75rem; cursor: pointer; transition: all .2s; }
+    .del-btn:hover { border-color: var(--danger); color: var(--danger); }
+    .add-btn { width: 100%; padding: .6rem; border-radius: 8px; border: 1px dashed var(--border); background: transparent; color: var(--muted); font-size: .83rem; cursor: pointer; transition: all .2s; margin-top: .4rem; }
+    .add-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* Skills tags editor */
+    .tags-editor { display: flex; flex-wrap: wrap; gap: .4rem; padding: .5rem; background: var(--bg3); border: 1px solid var(--border); border-radius: 8px; min-height: 42px; align-items: center; }
+    .tag-chip { display: flex; align-items: center; gap: .3rem; background: var(--bg2); border: 1px solid var(--border); border-radius: 6px; padding: .18rem .5rem; font-size: .78rem; }
+    .tag-chip button { background: none; border: none; color: var(--muted); cursor: pointer; font-size: .75rem; line-height: 1; padding: 0; }
+    .tag-chip button:hover { color: var(--danger); }
+    .tag-input { border: none; background: transparent; color: var(--text); font-size: .78rem; outline: none; min-width: 80px; }
+
+    /* Toast */
+    .toast {
+      position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%) translateY(80px);
+      background: var(--bg3); border: 1px solid var(--border);
+      border-radius: 10px; padding: .7rem 1.3rem; font-size: .88rem;
+      transition: transform .3s; z-index: 999; white-space: nowrap;
+      display: flex; align-items: center; gap: .5rem;
+    }
+    .toast.show { transform: translateX(-50%) translateY(0); }
+    .toast.success { border-color: rgba(63,185,80,.5); color: var(--accent2); }
+    .toast.error { border-color: rgba(248,81,73,.5); color: var(--danger); }
+
+    /* Status dot */
+    .status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--border); display: inline-block; }
+    .status-dot.ok { background: var(--accent2); }
+    .status-dot.err { background: var(--danger); }
+
+    .btn { padding: .55rem 1.2rem; border-radius: 8px; font-size: .88rem; font-weight: 600; cursor: pointer; border: none; transition: all .2s; }
+    .btn-primary { background: var(--accent); color: #0d1117; }
+    .btn-primary:hover { opacity: .85; }
+    .btn-outline { border: 1px solid var(--border); background: transparent; color: var(--text); }
+    .btn-outline:hover { border-color: var(--accent); color: var(--accent); }
+
+    @media (max-width: 600px) { .form-row { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div class="login-screen" id="loginScreen">
+  <div class="login-box">
+    <div class="login-icon">🔐</div>
+    <h2>管理后台</h2>
+    <p>NexCore Labs · 内容管理系统</p>
+    <input type="password" id="pwdInput" placeholder="输入管理密码" onkeydown="if(event.key==='Enter')doLogin()" />
+    <div class="login-error" id="loginError">密码错误，请重试</div>
+    <button class="btn btn-primary" style="width:100%" onclick="doLogin()">登录</button>
+  </div>
+</div>
+
+<!-- SETUP (first time GitHub config) -->
+<div class="setup-screen" id="setupScreen">
+  <div class="setup-inner">
+    <h2>⚙️ 首次配置</h2>
+    <p>管理后台需要连接 GitHub 仓库才能保存内容并自动发布网站。请按以下步骤完成配置（只需做一次）：</p>
+
+    <div class="setup-steps">
+      <div class="setup-step">
+        <div class="step-num">1</div>
+        <div class="step-body">
+          <h4>创建 GitHub 仓库</h4>
+          <p>打开 <a href="https://github.com/new" target="_blank">github.com/new</a>，新建一个仓库（名称随意，选 Public）</p>
+        </div>
+      </div>
+      <div class="setup-step">
+        <div class="step-num">2</div>
+        <div class="step-body">
+          <h4>上传网站文件</h4>
+          <p>在仓库页面点击 <code>uploading an existing file</code>，把 <code>index.html</code>、<code>content.json</code>、<code>admin.html</code> 三个文件拖进去，点击 Commit</p>
+        </div>
+      </div>
+      <div class="setup-step">
+        <div class="step-num">3</div>
+        <div class="step-body">
+          <h4>生成 GitHub Token</h4>
+          <p>打开 <a href="https://github.com/settings/tokens/new" target="_blank">github.com/settings/tokens/new</a>，勾选 <code>repo</code> 权限，生成并复制 Token</p>
+        </div>
+      </div>
+      <div class="setup-step">
+        <div class="step-num">4</div>
+        <div class="step-body">
+          <h4>连接 Vercel 到 GitHub</h4>
+          <p>打开 <a href="https://vercel.com" target="_blank">vercel.com</a> → 新建项目 → Import 刚才的 GitHub 仓库，以后每次改完内容会自动发布</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-section">
+      <div class="form-section-title">GitHub 配置信息</div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>GitHub 用户名</label>
+          <input id="ghOwner" placeholder="例如: chen-xiuqi" />
+        </div>
+        <div class="form-group">
+          <label>仓库名称</label>
+          <input id="ghRepo" placeholder="例如: nexcore-labs" />
+        </div>
+      </div>
+      <div class="form-group" style="margin-bottom:.8rem">
+        <label>Personal Access Token</label>
+        <input id="ghToken" type="password" placeholder="ghp_xxxxxxxxxxxx" />
+      </div>
+      <button class="btn btn-primary" onclick="saveGithubConfig()">保存配置并进入管理</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADMIN MAIN -->
+<div class="admin-screen" id="adminScreen">
+  <nav class="admin-nav">
+    <div class="admin-logo">NexCore Labs <span><span class="status-dot" id="statusDot"></span> 管理后台</span></div>
+    <div class="nav-actions">
+      <button class="publish-btn" id="publishBtn" onclick="publishContent()">
+        <span>🚀</span> <span id="publishLabel">保存并发布</span>
+      </button>
+      <button class="logout-btn" onclick="logout()">退出</button>
+    </div>
+  </nav>
+
+  <div class="admin-body">
+    <div class="section-tabs">
+      <button class="tab-btn active" onclick="switchTab('team',this)">🏠 团队信息</button>
+      <button class="tab-btn" onclick="switchTab('m0',this)">👤 陈修齐</button>
+      <button class="tab-btn" onclick="switchTab('m1',this)">👤 林昊</button>
+    </div>
+
+    <!-- TEAM TAB -->
+    <div class="tab-pane active" id="tab-team">
+      <div class="form-section">
+        <div class="form-section-title">团队基础信息</div>
+        <div class="form-row full">
+          <div class="form-group">
+            <label>团队名称</label>
+            <input id="team-name" />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>团队简介（中文）</label>
+            <textarea id="team-desc_zh"></textarea>
+          </div>
+          <div class="form-group">
+            <label>Team Description (English)</label>
+            <textarea id="team-desc_en"></textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MEMBER TABS (generated by JS) -->
+    <div class="tab-pane" id="tab-m0"></div>
+    <div class="tab-pane" id="tab-m1"></div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ── Config ──
+const ADMIN_PWD_HASH = '8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918'; // "admin" sha256 — change this!
+const LS_GITHUB = 'ncl_github';
+const LS_AUTHED = 'ncl_auth';
+
+let content = null;
+let githubCfg = null;
+
+// ── SHA256 (for password check) ──
+async function sha256(msg) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(msg));
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+}
+
+// ── Login ──
+async function doLogin() {
+  const pwd = document.getElementById('pwdInput').value;
+  const hash = await sha256(pwd);
+  if (hash === ADMIN_PWD_HASH) {
+    sessionStorage.setItem(LS_AUTHED, '1');
+    document.getElementById('loginError').style.display = 'none';
+    afterLogin();
+  } else {
+    document.getElementById('loginError').style.display = 'block';
+    document.getElementById('pwdInput').value = '';
+  }
+}
+
+function logout() {
+  sessionStorage.removeItem(LS_AUTHED);
+  location.reload();
+}
+
+function afterLogin() {
+  githubCfg = JSON.parse(localStorage.getItem(LS_GITHUB) || 'null');
+  document.getElementById('loginScreen').style.display = 'none';
+  if (!githubCfg) {
+    document.getElementById('setupScreen').style.display = 'block';
+  } else {
+    loadAndShowAdmin();
+  }
+}
+
+// ── Setup ──
+function saveGithubConfig() {
+  const cfg = {
+    owner: document.getElementById('ghOwner').value.trim(),
+    repo:  document.getElementById('ghRepo').value.trim(),
+    token: document.getElementById('ghToken').value.trim(),
+  };
+  if (!cfg.owner || !cfg.repo || !cfg.token) { showToast('请填写所有字段', 'error'); return; }
+  localStorage.setItem(LS_GITHUB, JSON.stringify(cfg));
+  githubCfg = cfg;
+  document.getElementById('setupScreen').style.display = 'none';
+  loadAndShowAdmin();
+}
+
+// ── Load content from GitHub ──
+async function loadAndShowAdmin() {
+  document.getElementById('adminScreen').style.display = 'block';
+  try {
+    const res = await fetch(`https://raw.githubusercontent.com/${githubCfg.owner}/${githubCfg.repo}/main/content.json?t=${Date.now()}`);
+    if (!res.ok) throw new Error();
+    content = await res.json();
+    document.getElementById('statusDot').className = 'status-dot ok';
+  } catch {
+    // fallback: load local
+    try {
+      const res = await fetch('/content.json?t=' + Date.now());
+      content = await res.json();
+      document.getElementById('statusDot').className = 'status-dot err';
+      showToast('未连接 GitHub，显示本地内容', 'error');
+    } catch { showToast('无法加载内容', 'error'); return; }
+  }
+  populateForms();
+}
+
+// ── Populate forms from content ──
+function populateForms() {
+  // Team
+  document.getElementById('team-name').value = content.team.name || '';
+  document.getElementById('team-desc_zh').value = content.team.desc_zh || '';
+  document.getElementById('team-desc_en').value = content.team.desc_en || '';
+
+  // Members
+  content.members.forEach((m, i) => renderMemberTab(m, i));
+}
+
+function renderMemberTab(m, i) {
+  const el = document.getElementById('tab-m' + i);
+  el.innerHTML = `
+    <div class="form-section">
+      <div class="form-section-title">基本信息</div>
+      <div class="form-row">
+        <div class="form-group"><label>姓名（中文）</label><input id="m${i}-name_zh" value="${esc(m.name_zh)}" /></div>
+        <div class="form-group"><label>Name (English)</label><input id="m${i}-name_en" value="${esc(m.name_en)}" /></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>职位（中文）</label><input id="m${i}-role_zh" value="${esc(m.role_zh)}" /></div>
+        <div class="form-group"><label>Role (English)</label><input id="m${i}-role_en" value="${esc(m.role_en)}" /></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>头像文字（单字）</label><input id="m${i}-avatar" value="${esc(m.avatar)}" maxlength="2" /></div>
+        <div class="form-group"><label>出生年月（如 2005.01）</label><input id="m${i}-dob" value="${esc(m.dob)}" /></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>邮箱</label><input id="m${i}-email" value="${esc(m.email)}" /></div>
+      </div>
+    </div>
+
+    <div class="form-section">
+      <div class="form-section-title">学校与地区</div>
+      <div class="form-row">
+        <div class="form-group"><label>学校（中文）</label><input id="m${i}-school_zh" value="${esc(m.school_zh)}" /></div>
+        <div class="form-group"><label>School (English)</label><input id="m${i}-school_en" value="${esc(m.school_en)}" /></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>专业年级（中文）</label><input id="m${i}-major_zh" value="${esc(m.major_zh)}" /></div>
+        <div class="form-group"><label>Major/Year (English)</label><input id="m${i}-major_en" value="${esc(m.major_en)}" /></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>所在地（中文）</label><input id="m${i}-location_zh" value="${esc(m.location_zh)}" /></div>
+        <div class="form-group"><label>Location (English)</label><input id="m${i}-location_en" value="${esc(m.location_en)}" /></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>语言能力（中文）</label><input id="m${i}-lang_zh" value="${esc(m.lang_zh)}" /></div>
+        <div class="form-group"><label>Languages (English)</label><input id="m${i}-lang_en" value="${esc(m.lang_en)}" /></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>兴趣方向（中文）</label><input id="m${i}-interest_zh" value="${esc(m.interest_zh)}" /></div>
+        <div class="form-group"><label>Interests (English)</label><input id="m${i}-interest_en" value="${esc(m.interest_en)}" /></div>
+      </div>
+    </div>
+
+    <div class="form-section">
+      <div class="form-section-title">技术标签</div>
+      <div class="form-group" style="margin-bottom:.8rem">
+        <label>编程语言（回车添加，点 × 删除）</label>
+        ${renderTagEditor('m'+i+'-langs', m.skills.languages)}
+      </div>
+      <div class="form-group" style="margin-bottom:.8rem">
+        <label>开发工具</label>
+        ${renderTagEditor('m'+i+'-tools', m.skills.tools)}
+      </div>
+    </div>
+
+    <div class="form-section">
+      <div class="form-section-title">项目经验</div>
+      <div id="m${i}-projects">${m.projects.map((p,j) => renderProjectEditor(i,j,p)).join('')}</div>
+      <button class="add-btn" onclick="addProject(${i})">+ 添加项目</button>
+    </div>
+  `;
+  // update tab button label
+  document.querySelectorAll('.tab-btn')[i+1].textContent = '👤 ' + m.name_zh;
+}
+
+function renderTagEditor(id, tags) {
+  const chips = (tags||[]).map((t,i) => `<span class="tag-chip">${esc(t)}<button onclick="removeTag('${id}',${i})">×</button></span>`).join('');
+  return `<div class="tags-editor" id="${id}">${chips}<input class="tag-input" placeholder="输入后回车..." onkeydown="addTag(event,'${id}')" /></div>`;
+}
+
+function addTag(e, id) {
+  if (e.key !== 'Enter') return;
+  e.preventDefault();
+  const input = e.target;
+  const val = input.value.trim();
+  if (!val) return;
+  input.value = '';
+  const container = document.getElementById(id);
+  const newChip = document.createElement('span');
+  newChip.className = 'tag-chip';
+  newChip.innerHTML = `${esc(val)}<button onclick="this.parentElement.remove()">×</button>`;
+  container.insertBefore(newChip, input);
+}
+
+function removeTag(id, idx) {
+  const chips = document.querySelectorAll('#' + id + ' .tag-chip');
+  if (chips[idx]) chips[idx].remove();
+}
+
+function renderProjectEditor(mi, pi, p) {
+  return `<div class="project-editor" id="proj-${mi}-${pi}">
+    <div class="project-editor-header">
+      <div class="project-editor-title">项目 ${pi+1}</div>
+      <button class="del-btn" onclick="removeProject(${mi},${pi})">删除</button>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>项目名（中文）</label><input id="p${mi}_${pi}-name_zh" value="${esc(p.name_zh)}" /></div>
+      <div class="form-group"><label>Project Name (EN)</label><input id="p${mi}_${pi}-name_en" value="${esc(p.name_en)}" /></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>课程编号</label><input id="p${mi}_${pi}-course" value="${esc(p.course)}" /></div>
+      <div class="form-group"><label>技术栈（逗号分隔）</label><input id="p${mi}_${pi}-stack" value="${esc((p.stack||[]).join(', '))}" /></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>描述（中文，每行一条）</label><textarea id="p${mi}_${pi}-desc_zh">${esc((p.desc_zh||[]).join('\n'))}</textarea></div>
+      <div class="form-group"><label>Description (EN, one per line)</label><textarea id="p${mi}_${pi}-desc_en">${esc((p.desc_en||[]).join('\n'))}</textarea></div>
+    </div>
+  </div>`;
+}
+
+function addProject(mi) {
+  const container = document.getElementById('m' + mi + '-projects');
+  const pi = container.children.length;
+  const blank = { name_zh:'新项目', name_en:'New Project', course:'', stack:[], desc_zh:[], desc_en:[] };
+  const div = document.createElement('div');
+  div.innerHTML = renderProjectEditor(mi, pi, blank);
+  container.appendChild(div.firstChild);
+}
+
+function removeProject(mi, pi) {
+  const el = document.getElementById(`proj-${mi}-${pi}`);
+  if (el) el.remove();
+}
+
+// ── Collect data from forms ──
+function collectContent() {
+  const c = { team: {}, members: [] };
+  c.team.name = document.getElementById('team-name').value.trim();
+  c.team.desc_zh = document.getElementById('team-desc_zh').value.trim();
+  c.team.desc_en = document.getElementById('team-desc_en').value.trim();
+
+  content.members.forEach((_, i) => {
+    const g = id => { const el = document.getElementById(id); return el ? el.value.trim() : ''; };
+    const getTags = id => [...document.querySelectorAll(`#${id} .tag-chip`)].map(el => el.textContent.replace('×','').trim());
+
+    // collect projects from DOM
+    const projContainer = document.getElementById('m' + i + '-projects');
+    const projects = [];
+    if (projContainer) {
+      [...projContainer.querySelectorAll('.project-editor')].forEach(pe => {
+        const pid = pe.id; // proj-mi-pi
+        const [,mi2,pi] = pid.split('-');
+        const key = `p${mi2}_${pi}`;
+        projects.push({
+          name_zh: g(key+'-name_zh'), name_en: g(key+'-name_en'),
+          course: g(key+'-course'),
+          stack: g(key+'-stack').split(',').map(s=>s.trim()).filter(Boolean),
+          desc_zh: g(key+'-desc_zh').split('\n').map(s=>s.trim()).filter(Boolean),
+          desc_en: g(key+'-desc_en').split('\n').map(s=>s.trim()).filter(Boolean),
+        });
+      });
+    }
+
+    c.members.push({
+      id: content.members[i].id,
+      avatar: g(`m${i}-avatar`) || content.members[i].avatar,
+      color: content.members[i].color,
+      name_zh: g(`m${i}-name_zh`), name_en: g(`m${i}-name_en`),
+      role_zh: g(`m${i}-role_zh`), role_en: g(`m${i}-role_en`),
+      dob: g(`m${i}-dob`), email: g(`m${i}-email`),
+      school_zh: g(`m${i}-school_zh`), school_en: g(`m${i}-school_en`),
+      major_zh: g(`m${i}-major_zh`), major_en: g(`m${i}-major_en`),
+      location_zh: g(`m${i}-location_zh`), location_en: g(`m${i}-location_en`),
+      lang_zh: g(`m${i}-lang_zh`), lang_en: g(`m${i}-lang_en`),
+      interest_zh: g(`m${i}-interest_zh`), interest_en: g(`m${i}-interest_en`),
+      skills: {
+        languages: getTags(`m${i}-langs`), tools: getTags(`m${i}-tools`),
+        algo_zh: content.members[i].skills.algo_zh, algo_en: content.members[i].skills.algo_en,
+        se_zh: content.members[i].skills.se_zh, se_en: content.members[i].skills.se_en,
+      },
+      projects,
+    });
+  });
+  return c;
+}
+
+// ── Publish to GitHub ──
+async function publishContent() {
+  const btn = document.getElementById('publishBtn');
+  const label = document.getElementById('publishLabel');
+  btn.disabled = true; label.textContent = '发布中...';
+
+  const newContent = collectContent();
+  const body = JSON.stringify(newContent, null, 2);
+
+  try {
+    // get current file SHA
+    const meta = await fetch(`https://api.github.com/repos/${githubCfg.owner}/${githubCfg.repo}/contents/content.json`, {
+      headers: { Authorization: `token ${githubCfg.token}`, Accept: 'application/vnd.github+json' }
+    });
+    const metaJson = await meta.json();
+    const sha = metaJson.sha;
+
+    // update file
+    const res = await fetch(`https://api.github.com/repos/${githubCfg.owner}/${githubCfg.repo}/contents/content.json`, {
+      method: 'PUT',
+      headers: { Authorization: `token ${githubCfg.token}`, Accept: 'application/vnd.github+json', 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        message: 'update: content via admin panel',
+        content: btoa(unescape(encodeURIComponent(body))),
+        sha
+      })
+    });
+
+    if (res.ok) {
+      content = newContent;
+      showToast('✅ 发布成功！网站将在 1 分钟内更新', 'success');
+      document.getElementById('statusDot').className = 'status-dot ok';
+    } else {
+      const err = await res.json();
+      showToast('发布失败：' + (err.message || '未知错误'), 'error');
+    }
+  } catch (e) {
+    showToast('网络错误，请检查 Token 或网络', 'error');
+  }
+
+  btn.disabled = false; label.textContent = '保存并发布';
+}
+
+// ── UI helpers ──
+function switchTab(id, btn) {
+  document.querySelectorAll('.tab-pane').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+  document.getElementById('tab-' + id).classList.add('active');
+  btn.classList.add('active');
+}
+
+function showToast(msg, type) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.className = 'toast ' + type;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3500);
+}
+
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+// ── Init ──
+if (sessionStorage.getItem(LS_AUTHED)) {
+  document.getElementById('loginScreen').style.display = 'none';
+  afterLogin();
+}
+</script>
+</body>
+</html>

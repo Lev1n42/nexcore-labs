@@ -1,0 +1,119 @@
+{
+  "team": {
+    "name": "NexCore Labs",
+    "desc_zh": "专注于后端架构、前端工程与 AI 融科技方向的开发团队，致力于构建高质量的现代软件系统。",
+    "desc_en": "A dev team focused on backend architecture, frontend engineering, and AI-driven FinTech — building high-quality modern software systems."
+  },
+  "members": [
+    {
+      "id": "cxq",
+      "avatar": "陈",
+      "color": "blue",
+      "name_zh": "陈修齐",
+      "name_en": "Chen Xiuqi",
+      "role_zh": "后端开发工程师",
+      "role_en": "Backend Developer",
+      "dob": "2005.01",
+      "email": "22141834824@qq.com",
+      "school_zh": "新南威尔士大学 (UNSW)",
+      "school_en": "Univ. of New South Wales (UNSW)",
+      "major_zh": "计算机科学 · 大二",
+      "major_en": "Computer Science · Year 2",
+      "location_zh": "武汉市复地东湖国际",
+      "location_en": "Wuhan, China",
+      "lang_zh": "中文（母语）· 英语（流利）",
+      "lang_en": "Chinese (Native) · English (Fluent)",
+      "interest_zh": "后端 · 算法 · FinTech · AI",
+      "interest_en": "Backend · Algorithms · FinTech · AI",
+      "skills": {
+        "languages": ["C", "Python", "JavaScript", "TypeScript", "Bash", "SQL"],
+        "tools": ["Node.js", "Express.js", "REST API", "Git", "Docker", "Jest"],
+        "algo_zh": ["树/图", "哈希表", "动态规划", "BFS/DFS"],
+        "algo_en": ["Tree/Graph", "Hash Table", "Dynamic Programming", "BFS/DFS"],
+        "se_zh": ["敏捷开发", "TDD", "CI/CD", "单元测试"],
+        "se_en": ["Agile", "TDD", "CI/CD", "Unit Testing"]
+      },
+      "projects": [
+        {
+          "name_zh": "Mission Control Web 后端系统",
+          "name_en": "Mission Control Web — Backend",
+          "course": "COMP1531",
+          "stack": ["TypeScript", "Express.js", "Jest", "REST"],
+          "desc_zh": ["实现多条后端路由、用户登录注册、任务创建与模拟逻辑", "异常驱动错误处理替代传统 if-check，提升代码清晰度", "Jest 单元测试覆盖率达 85%+"],
+          "desc_en": ["Built multiple backend routes, user auth, task creation and simulation logic", "Exception-driven error handling replaced if-checks for cleaner code", "Achieved 85%+ test coverage with Jest"]
+        },
+        {
+          "name_zh": "高级数据结构实现",
+          "name_en": "Advanced Data Structures",
+          "course": "COMP2521",
+          "stack": ["C", "指针", "递归", "内存模型"],
+          "desc_zh": ["从零实现链表、AVL 树、BST、堆、图（BFS/DFS）、哈希表", "使用 AddressSanitizer 修复内存越界与悬空指针问题"],
+          "desc_en": ["Implemented ADTs from scratch: linked lists, AVL trees, BST, heaps, graphs, hash tables", "Used AddressSanitizer to fix memory overflows and dangling pointer bugs"]
+        },
+        {
+          "name_zh": "Memory Game 记忆游戏后端",
+          "name_en": "Memory Game — Backend",
+          "course": "DPST1093",
+          "stack": ["TypeScript", "Express", "Jest"],
+          "desc_zh": ["实现 quiz API、状态管理、随机题目生成逻辑", "采用 session 用户状态管理，保证数据一致性"],
+          "desc_en": ["Built quiz API, state management, and random question generation", "Session-based state management for data consistency"]
+        }
+      ]
+    },
+    {
+      "id": "lh",
+      "avatar": "林",
+      "color": "green",
+      "name_zh": "林昊",
+      "name_en": "Lin Hao",
+      "role_zh": "前端开发工程师",
+      "role_en": "Frontend Developer",
+      "dob": "2004.08",
+      "email": "linhao@nexcorelabs.dev",
+      "school_zh": "墨尔本大学",
+      "school_en": "University of Melbourne",
+      "major_zh": "计算机科学 · 大二",
+      "major_en": "Computer Science · Year 2",
+      "location_zh": "墨尔本，澳大利亚",
+      "location_en": "Melbourne, Australia",
+      "lang_zh": "中文（母语）· 英语（流利）",
+      "lang_en": "Chinese (Native) · English (Fluent)",
+      "interest_zh": "前端架构 · UI/UX · 开源",
+      "interest_en": "Frontend Arch · UI/UX · Open Source",
+      "skills": {
+        "languages": ["JavaScript", "TypeScript", "HTML/CSS", "Python"],
+        "tools": ["React", "Vue 3", "Next.js", "Tailwind CSS", "Figma", "Vite"],
+        "algo_zh": ["响应式设计", "性能优化", "WebSocket", "组件设计"],
+        "algo_en": ["Responsive Design", "Performance", "WebSocket", "Component Design"],
+        "se_zh": ["GraphQL", "Git", "Vercel", "CI/CD"],
+        "se_en": ["GraphQL", "Git", "Vercel", "CI/CD"]
+      },
+      "projects": [
+        {
+          "name_zh": "电商平台前端系统",
+          "name_en": "E-Commerce Frontend System",
+          "course": "COMP30022",
+          "stack": ["React", "TypeScript", "Tailwind"],
+          "desc_zh": ["独立完成商品列表、购物车、结算流程全套 UI 组件", "实现响应式布局，适配移动端与桌面端", "接入 REST API，封装统一请求层与错误处理"],
+          "desc_en": ["Built complete UI for product listing, cart, and checkout flow", "Responsive layout supporting both mobile and desktop", "Integrated REST API with a unified request/error layer"]
+        },
+        {
+          "name_zh": "实时数据分析看板",
+          "name_en": "Real-time Analytics Dashboard",
+          "course": "COMP30019",
+          "stack": ["Vue 3", "WebSocket", "Chart.js"],
+          "desc_zh": ["基于 WebSocket 实现实时数据推送与可视化图表刷新", "设计可复用 Chart 组件库，支持折线图、柱状图、热力图", "优化渲染性能，大数据量下帧率稳定在 60fps"],
+          "desc_en": ["Real-time data streaming and chart refresh via WebSocket", "Reusable Chart component library: line, bar, heatmap charts", "Rendering optimized to maintain 60fps under large datasets"]
+        },
+        {
+          "name_zh": "个人主页生成器",
+          "name_en": "Portfolio Generator",
+          "course": "个人项目",
+          "stack": ["Next.js", "Prisma", "PostgreSQL"],
+          "desc_zh": ["用户通过表单填写信息自动生成个人主页并支持实时预览", "使用 Prisma ORM 管理用户数据与主题配置", "部署至 Vercel，支持自定义域名绑定"],
+          "desc_en": ["Users fill a form to auto-generate a personal page with live preview", "Prisma ORM for user data and theme config management", "Deployed on Vercel with custom domain support"]
+        }
+      ]
+    }
+  ]
+}
